@@ -203,27 +203,92 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(5,10,20,0.97
 
 <!-- PAYMENT MODAL -->
 <div class="modal-overlay" id="pay-modal">
-  <div class="modal">
+  <div class="modal" style="max-width:520px;">
     <button class="modal-close" onclick="closeModal()">&#10005;</button>
     <h3>&#128179; Complete Payment</h3>
-    <p>Send payment to complete your subscription. After payment, admin will verify and activate your account within 24 hours.</p>
-    <div style="background:var(--bg3);border-radius:10px;padding:16px;margin-bottom:18px;">
-      <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;">Send payment to:</div>
-      <div style="font-size:0.95rem;font-weight:600;color:var(--accent);word-break:break-all;" id="pay-address">support@velnoxa.work.gd</div>
-      <div style="margin-top:10px;font-size:0.8rem;color:var(--muted);">Amount:</div>
-      <div style="font-size:1.4rem;font-weight:700;color:var(--gold);" id="modal-amount">$80</div>
-      <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;" id="modal-plan">1 Month Plan</div>
+    <p style="margin-bottom:16px;">Choose your preferred payment method below. Your account will be activated automatically after payment confirmation.</p>
+    
+    <!-- Payment Method Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      <button class="pay-tab active" id="ptab-paypal" onclick="switchPayTab('paypal')" style="flex:1;padding:9px;border-radius:8px;border:2px solid var(--gold);background:rgba(240,180,41,0.1);color:var(--gold);cursor:pointer;font-weight:600;font-size:0.85rem;">&#128179; PayPal</button>
+      <button class="pay-tab" id="ptab-upi" onclick="switchPayTab('upi')" style="flex:1;padding:9px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:0.85rem;">&#128242; UPI / PhonePe</button>
+      <button class="pay-tab" id="ptab-bank" onclick="switchPayTab('bank')" style="flex:1;padding:9px;border-radius:8px;border:2px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-weight:600;font-size:0.85rem;">&#127968; Bank</button>
     </div>
-    <div class="form-group"><label>Transaction ID / Reference</label><input type="text" id="txn-id" placeholder="Enter your payment transaction ID"></div>
-    <div class="form-group"><label>Payment Method Used</label>
-      <select id="pay-method">
-        <option>Bank Transfer (NEFT/IMPS/RTGS)</option>
-        <option>UPI</option>
-        <option>Cryptocurrency (USDT/BTC)</option>
-        <option>International Wire</option>
-      </select>
+
+    <!-- Plan Summary -->
+    <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:0.78rem;color:var(--muted);">Selected Plan</div>
+        <div style="font-size:0.88rem;font-weight:600;" id="modal-plan">1 Month Plan</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:0.78rem;color:var(--muted);">Amount Due</div>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--gold);" id="modal-amount">$80</div>
+      </div>
     </div>
-    <button class="btn btn-gold" style="width:100%;padding:11px;" onclick="submitPayment()">Submit Payment Proof</button>
+
+    <!-- PAYPAL TAB -->
+    <div id="pay-paypal">
+      <div style="background:linear-gradient(135deg,rgba(0,112,186,0.15),rgba(0,56,93,0.15));border:1px solid rgba(0,112,186,0.3);border-radius:12px;padding:18px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:1.1rem;font-weight:700;color:#009cde;margin-bottom:6px;">&#128179; PayPal</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;">Send payment to this PayPal email:</div>
+        <div style="font-size:1rem;font-weight:700;color:#009cde;background:rgba(0,156,222,0.1);padding:10px 16px;border-radius:8px;word-break:break-all;margin-bottom:10px;" onclick="copyText('velnoxa.work.gd@gmail.com')" style="cursor:pointer;">velnoxa.work.gd@gmail.com</div>
+        <button onclick="window.open('https://www.paypal.com/paypalme/velnoxa','_blank')" style="background:#009cde;color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.9rem;width:100%;">&#128279; Pay via PayPal Now</button>
+      </div>
+      <div style="font-size:0.78rem;color:var(--muted);text-align:center;margin-bottom:14px;">After sending payment, enter transaction ID below</div>
+      <div class="form-group"><label>PayPal Transaction ID</label><input type="text" id="txn-id" placeholder="e.g. 7XB34567AB890123C"></div>
+      <button class="btn btn-gold" style="width:100%;padding:11px;" onclick="submitPayment('PayPal')">&#9989; Confirm PayPal Payment</button>
+    </div>
+
+    <!-- UPI TAB -->
+    <div id="pay-upi" style="display:none;">
+      <div style="background:linear-gradient(135deg,rgba(112,36,221,0.15),rgba(64,0,128,0.15));border:1px solid rgba(112,36,221,0.3);border-radius:12px;padding:18px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:1.1rem;font-weight:700;color:#7024dd;margin-bottom:6px;">&#128242; UPI / PhonePe / GPay</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">Scan QR or send to UPI ID:</div>
+        <!-- QR Code placeholder -->
+        <div style="width:150px;height:150px;background:white;border-radius:10px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;padding:8px;">
+          <svg width="134" height="134" viewBox="0 0 134 134">
+            <rect width="134" height="134" fill="white"/>
+            <rect x="5" y="5" width="55" height="55" fill="none" stroke="black" stroke-width="3"/>
+            <rect x="13" y="13" width="39" height="39" fill="black"/>
+            <rect x="74" y="5" width="55" height="55" fill="none" stroke="black" stroke-width="3"/>
+            <rect x="82" y="13" width="39" height="39" fill="black"/>
+            <rect x="5" y="74" width="55" height="55" fill="none" stroke="black" stroke-width="3"/>
+            <rect x="13" y="82" width="39" height="39" fill="black"/>
+            <rect x="74" y="74" width="10" height="10" fill="black"/>
+            <rect x="90" y="74" width="10" height="10" fill="black"/>
+            <rect x="106" y="74" width="22" height="10" fill="black"/>
+            <rect x="74" y="90" width="22" height="10" fill="black"/>
+            <rect x="106" y="90" width="10" height="10" fill="black"/>
+            <rect x="74" y="106" width="10" height="22" fill="black"/>
+            <rect x="90" y="106" width="22" height="10" fill="black"/>
+            <rect x="118" y="106" width="10" height="22" fill="black"/>
+          </svg>
+        </div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px;">UPI ID / Phone:</div>
+        <div id="upi-id-display" style="font-size:1.1rem;font-weight:700;color:#7024dd;background:rgba(112,36,221,0.1);padding:10px;border-radius:8px;cursor:pointer;" onclick="copyText('9554147805@ybl')">9554147805@ybl</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">Phone: <strong style="color:var(--text);">+91 9554147805</strong></div>
+      </div>
+      <div class="form-group"><label>UPI Transaction ID / UTR Number</label><input type="text" id="txn-id-upi" placeholder="e.g. 123456789012"></div>
+      <button class="btn" style="width:100%;padding:11px;background:#7024dd;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;" onclick="submitPayment('UPI')">&#9989; Confirm UPI Payment</button>
+    </div>
+
+    <!-- BANK TAB -->
+    <div id="pay-bank" style="display:none;">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;">
+        <div style="font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:12px;">&#127968; Bank Transfer Details</div>
+        <div style="font-size:0.82rem;margin-bottom:8px;"><span style="color:var(--muted);">Account Name:</span> <strong>Velnoxa Markets</strong></div>
+        <div style="font-size:0.82rem;margin-bottom:8px;"><span style="color:var(--muted);">Contact Email:</span> <strong style="color:var(--accent);">velnoxa.work.gd@gmail.com</strong></div>
+        <div style="font-size:0.82rem;margin-bottom:8px;"><span style="color:var(--muted);">Phone:</span> <strong>+91 9554147805</strong></div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:10px;padding:8px;background:rgba(0,212,255,0.05);border-radius:6px;">Contact us via email or phone for bank account details before transferring.</div>
+      </div>
+      <div class="form-group"><label>Bank Reference / Transaction ID</label><input type="text" id="txn-id-bank" placeholder="Enter UTR or reference number"></div>
+      <button class="btn btn-solid" style="width:100%;padding:11px;" onclick="submitPayment('Bank Transfer')">&#9989; Confirm Bank Payment</button>
+    </div>
+
+    <div style="text-align:center;margin-top:14px;font-size:0.76rem;color:var(--muted);">
+      Need help? <span style="color:var(--accent);cursor:pointer;" onclick="window.location.href='mailto:velnoxa.work.gd@gmail.com'">velnoxa.work.gd@gmail.com</span> &bull; <span style="color:var(--accent);">+91 9554147805</span>
+    </div>
   </div>
 </div>
 
@@ -316,9 +381,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(5,10,20,0.97
     </div>
   </div>
   <div style="text-align:center;padding:28px;font-size:0.76rem;color:var(--muted);border-top:1px solid var(--border);">
-    &#169; 2025 Velnoxa Markets &bull; velnoxa.work.gd &bull; All Rights Reserved &bull;
-    <a href="#" style="color:var(--accent);text-decoration:none;">Terms</a> &bull;
-    <a href="#" style="color:var(--accent);text-decoration:none;">Privacy</a>
+    &#169; 2025 Velnoxa Markets &bull; velnoxa.work.gd &bull; All Rights Reserved<br>
+    <span style="margin-top:6px;display:block;">
+      &#128231; <a href="mailto:velnoxa.work.gd@gmail.com" style="color:var(--accent);text-decoration:none;">velnoxa.work.gd@gmail.com</a> &bull;
+      &#128242; <a href="tel:+919554147805" style="color:var(--accent);text-decoration:none;">+91 9554147805</a> &bull;
+      <a href="#" style="color:var(--accent);text-decoration:none;">Terms</a> &bull;
+      <a href="#" style="color:var(--accent);text-decoration:none;">Privacy</a>
+    </span>
   </div>
 </div>
 
@@ -942,9 +1011,42 @@ function closeModal() {
   document.getElementById('pay-modal').classList.remove('open');
 }
 
-function submitPayment() {
-  var txn = document.getElementById('txn-id').value.trim();
-  var method = document.getElementById('pay-method').value;
+function switchPayTab(tab) {
+  var tabs = ['paypal','upi','bank'];
+  for (var i = 0; i < tabs.length; i++) {
+    var t = tabs[i];
+    var btn = document.getElementById('ptab-' + t);
+    var pnl = document.getElementById('pay-' + t);
+    if (t === tab) {
+      btn.style.borderColor = 'var(--gold)';
+      btn.style.background = 'rgba(240,180,41,0.1)';
+      btn.style.color = 'var(--gold)';
+      pnl.style.display = 'block';
+    } else {
+      btn.style.borderColor = 'var(--border)';
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--muted)';
+      pnl.style.display = 'none';
+    }
+  }
+}
+
+function copyText(txt) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(txt).then(function() { notify('Copied: ' + txt, 'success'); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    notify('Copied: ' + txt, 'success');
+  }
+}
+
+function submitPayment(method) {
+  var txnEl = document.getElementById('txn-id');
+  if (method === 'UPI') txnEl = document.getElementById('txn-id-upi');
+  if (method === 'Bank Transfer') txnEl = document.getElementById('txn-id-bank');
+  var txn = txnEl ? txnEl.value.trim() : '';
   if (!txn) { notify('Please enter your transaction ID / reference', 'error'); return; }
   if (!regData) { notify('Registration data missing. Please register again.', 'error'); return; }
 
